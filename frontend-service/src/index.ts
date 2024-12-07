@@ -16,7 +16,6 @@ import { app } from "./api";
 // process.on('SIGTERM', gracefulShutdown);  // Catches kill command
 // process.on('SIGQUIT', gracefulShutdown);  // Catches quit signal
 
-
 app.listen(3001, () => {
-  console.log('Frontend service running on port 3001');
+    console.log("Frontend service running on port 3001");
 });

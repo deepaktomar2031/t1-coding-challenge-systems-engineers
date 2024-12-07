@@ -1,9 +1,15 @@
 services:
-  database:
+  mongo_db:
     container_name: t1-coding-challenge-database
     image: mongo:4.4.3
+    command: mongod --port 27018
+    restart: always
+    volumes:
+      - mongo_db:/data/db
     ports:
-      - "27017:27017"
+      - "27018:27018"
+    networks:
+      - proxynet
 
   zookeeper:
     container_name: t1-coding-challenge-zookeeper
@@ -34,17 +40,26 @@ services:
   frontend-service:
     container_name: t1-coding-challenge-frontend-service
     build: ./frontend-service
+    environment:
+      DATABASE_URL: mongodb://mongo_db:27018/TradeDB
     ports:
       - "3001:3001"
     depends_on:
       - kafka-producer
+      - mongo_db
+    networks:
+      - proxynet
 
   calculation-service:
     container_name: t1-coding-challenge-calculation-service
     build: ./calculation-service
+    environment:
+      DATABASE_URL: mongodb://mongo_db:27018/TradeDB
     depends_on:
       - kafka-producer
-      - database
+      - mongo_db
+    networks:
+      - proxynet
 
   frontend:
     container_name: t1-coding-challenge-frontend
@@ -59,3 +74,11 @@ services:
       - "3000:3000"
     depends_on:
       - frontend-service
+
+volumes:
+  mongo_db:
+
+networks:
+  proxynet:
+    name: custom_network
+    driver: bridge
