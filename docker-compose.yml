@@ -1,7 +1,7 @@
 services:
-    mongo:
+    mongo_db:
         image: mongo:latest
-        container_name: mongo
+        container_name: mongo_db
         command: mongod --port 27018
         ports:
             - "27018:27018"
@@ -44,7 +44,7 @@ services:
         container_name: t1-coding-challenge-frontend-service
         build: ./frontend-service
         environment:
-            DATABASE_URL: mongodb://mongo:27018/tradeDB
+            DATABASE_URL: mongodb://mongo_db:27018/tradeDB
         ports:
             - "3001:3001"
         depends_on:
@@ -57,10 +57,10 @@ services:
         container_name: t1-coding-challenge-calculation-service
         build: ./calculation-service
         environment:
-            DATABASE_URL: mongodb://mongo:27018/tradeDB
+            DATABASE_URL: mongodb://mongo_db:27018/tradeDB
         depends_on:
             - kafka-producer
-            - mongo
+            - mongo_db
         # networks:
         #     - proxynet
 
