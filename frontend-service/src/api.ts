@@ -2,17 +2,17 @@ import cors from "cors";
 import express from "express";
 import { getOpenPosition } from "./open-position";
 import { getPnls } from "./pnl";
-import { connectMongo } from "./db";
+// import { connectMongo } from "./db";
 
 export const app = express();
 
 app.use(cors());
 
-const connectDatabases = async () => {
-    await connectMongo(String(process.env.DATABASE_URL!));
-};
+// const connectDatabases = async () => {
+//     await connectMongo(String(process.env.DATABASE_URL!));
+// };
 
-connectDatabases();
+// connectDatabases();
 
 app.get("/health", (_req, res) => {
     res.json({ status: "OK" });

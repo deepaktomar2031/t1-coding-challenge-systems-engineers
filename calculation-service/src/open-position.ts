@@ -7,69 +7,65 @@ export function getOpenPosition() {
     return buyVolume - sellVolume;
 }
 
-const consumer = new Kafka.KafkaConsumer(
-    {
-        "group.id": "calculation-service",
-        "metadata.broker.list": "kafka:9092",
-    },
-    {}
-);
+const topics = ["market", "trades"]; // Topics to subscribe
 
-consumer.connect({}, (err, metaData) => {
-    if (err) {
-        console.error("Error connecting to Kafka:", err);
-        return;
-    }
+const consumerConfig = {
+    "group.id": "calculation-service",
+    "metadata.broker.list": "kafka:9092",
+};
 
-    console.log("Connected to Kafka:", metaData);
-});
+const consumer = new Kafka.KafkaConsumer(consumerConfig, {});
 
-consumer
-    .on("ready", () => {
-        consumer.subscribe(["market"]);
-        consumer.consume();
-    })
-    .on("data", (data) => {
-        if (!data.value) {
-            throw new Error("Invalid message");
-        }
-
-        const message = JSON.parse(data.value.toString());
-        if (message.messageType !== "market") {
+export const startConsumer = () => {
+    console.log("Connecting to Kafka...");
+    consumer.connect({}, (err, metaData) => {
+        if (err) {
+            console.error("Error connecting to Kafka:", err);
             return;
         }
-
-        const marketMessage = toMarketMessage(message);
-        console.log("++++++++++++++++++++++++++++++marketMessage", marketMessage);
-
-        // if (tradeMessage.tradeType === "BUY") {
-        //     buyVolume += tradeMessage.volume;
-        // } else if (tradeMessage.tradeType === "SELL") {
-        //     sellVolume += tradeMessage.volume;
-        // } else {
-        //     throw new Error("Invalid trade type");
-        // }
+        console.log("Connected to Kafka:", metaData);
     });
+};
 
-// consumer.on('ready', () => {
-//     consumer.subscribe(['trades']);
-//     consumer.consume();
-// }).on('data', (data) => {
-//     if (!data.value) {
-//         throw new Error('Invalid message');
-//     }
+consumer.on("ready", () => {
+    console.log("++++++++++++++++++++++++++++++here");
+    consumer.subscribe(topics);
+    consumer.consume();
+});
 
-//     const message = JSON.parse(data.value.toString());
-//     if (message.messageType !== 'trades') {
-//         return;
-//     }
+consumer.on("data", (data) => {
+    if (!data.value) {
+        throw new Error("Invalid message");
+    }
 
-//     const tradeMessage = toTradeMessage(message);
-//     if (tradeMessage.tradeType === 'BUY') {
-//         buyVolume += tradeMessage.volume
-//     } else if (tradeMessage.tradeType === 'SELL') {
-//         sellVolume += tradeMessage.volume;
-//     } else {
-//         throw new Error('Invalid trade type');
-//     }
-// });
+    const message = JSON.parse(data.value.toString());
+    console.log("Received message:", message);
+
+    if (message.messageType === "market") {
+        const marketMessage = toMarketMessage(message);
+        console.log("Processed Market Message:", marketMessage);
+    } else if (message.messageType === "trades") {
+        const tradeMessage = toTradeMessage(message);
+
+        if (tradeMessage.tradeType === "BUY") {
+            buyVolume += tradeMessage.volume;
+        } else if (tradeMessage.tradeType === "SELL") {
+            sellVolume += tradeMessage.volume;
+        } else {
+            console.error("Invalid trade type:", tradeMessage.tradeType);
+        }
+
+        console.log("Trade Processed. Buy Volume:", buyVolume, "Sell Volume:", sellVolume);
+    } else {
+        console.warn("Unknown message type:", message.messageType);
+    }
+});
+
+consumer.on("event.error", (err) => {
+    console.error("Kafka consumer error:", err);
+});
+
+consumer.on("disconnected", (event) => {
+    console.warn("Kafka consumer disconnected:", event);
+});
+

@@ -4,6 +4,7 @@ require("dotenv").config();
 import cors from "cors";
 import express from "express";
 import { connectMongo } from "./db";
+import { startConsumer } from "./open-position";
 
 export const app = express();
 
@@ -18,7 +19,14 @@ function toStreamMessage(data: any) {
 }
 
 const connectDatabases = async () => {
-    await connectMongo(String(process.env.DATABASE_URL!));
+    try {
+        const mongoConnection = String(process.env.DATABASE_URL!);
+        console.log("+++++++++++++++++++++++++++++", mongoConnection);
+        await connectMongo(String(process.env.DATABASE_URL!));
+        startConsumer();
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
+    }
 };
 
 connectDatabases();
