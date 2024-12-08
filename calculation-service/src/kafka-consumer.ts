@@ -3,11 +3,12 @@ import { toMarketMessage, toTradeMessage } from "./transformation";
 
 let buyVolume = 0;
 let sellVolume = 0;
+
 export function getOpenPosition() {
     return buyVolume - sellVolume;
 }
 
-const topics = ["market", "trades"]; // Topics to subscribe
+const topics = ["market", "trades"];
 
 const consumerConfig = {
     "group.id": "calculation-service",
@@ -16,7 +17,7 @@ const consumerConfig = {
 
 const consumer = new Kafka.KafkaConsumer(consumerConfig, {});
 
-export const startConsumer = () => {
+export const startKafkaConsumer = () => {
     console.log("Connecting to Kafka...");
     consumer.connect({}, (err, metaData) => {
         if (err) {
@@ -28,7 +29,6 @@ export const startConsumer = () => {
 };
 
 consumer.on("ready", () => {
-    console.log("++++++++++++++++++++++++++++++here");
     consumer.subscribe(topics);
     consumer.consume();
 });
@@ -68,4 +68,3 @@ consumer.on("event.error", (err) => {
 consumer.on("disconnected", (event) => {
     console.warn("Kafka consumer disconnected:", event);
 });
-

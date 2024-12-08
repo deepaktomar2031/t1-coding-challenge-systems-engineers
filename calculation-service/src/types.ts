@@ -31,3 +31,13 @@ export interface PnL {
     endTime: string;
     pnl: number;
 }
+
+export interface ITrade {
+    buyPrice: number;
+    sellPrice: number;
+    startTime: Date;
+    endTime: Date;
+    totalBuyVolume: number;
+    totalSellVolume: number;
+    profitOrLoss: number;
+}

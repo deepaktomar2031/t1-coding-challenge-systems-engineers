@@ -1,6 +1,6 @@
 import * as mongoose from "mongoose";
 
-const TradeDataSchema = new mongoose.Schema(
+const TradeData = new mongoose.Schema(
     {
         buyPrice: { type: Number, required: true },
         sellPrice: { type: Number, required: true },
@@ -13,4 +13,4 @@ const TradeDataSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export default mongoose.model("trade", TradeDataSchema);
+export default mongoose.model("trade", TradeData);

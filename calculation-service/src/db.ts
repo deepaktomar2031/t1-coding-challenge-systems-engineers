@@ -1,15 +1,12 @@
 // YOUR CODE HERE
-require("dotenv").config();
-import * as mongoose from "mongoose";
 
-mongoose.set("strictQuery", true);
+import TradeData from "./model";
+import { ITrade } from "./types";
 
-export const connectMongo = async (mongoUrl: string) => {
+export const saveTradeData = async (data: ITrade) => {
     try {
-        await mongoose.connect(mongoUrl);
-        console.log("Connected to MongoDB");
+        await TradeData.create(data);
     } catch (error) {
-        console.log("error ", error);
-        process.exit(1);
+        console.error("Error saving trade data:", error);
     }
 };
