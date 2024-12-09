@@ -46,15 +46,14 @@ services:
             - mongo_db
 
     calculation-service:
-        container_name: t1-coding-challenge-calculation-service
         build: ./calculation-service
         environment:
             DATABASE_URL: mongodb://mongo_db:27018/tradeDB
+        deploy:
+            replicas: 2
         depends_on:
             - kafka-producer
             - mongo_db
-        # networks:
-        #     - proxynet
 
     frontend:
         container_name: t1-coding-challenge-frontend
@@ -72,8 +71,3 @@ services:
 
 volumes:
     mongo_data:
-
-# networks:
-#     proxynet:
-#         name: custom_network
-#         driver: bridge

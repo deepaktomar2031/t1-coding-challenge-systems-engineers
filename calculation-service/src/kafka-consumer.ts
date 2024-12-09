@@ -1,14 +1,7 @@
 import Kafka from "node-rdkafka";
+import { processMarketMessage, processTradeMessage } from "./helpers";
 import { toMarketMessage, toTradeMessage } from "./transformation";
-
-let buyVolume = 0;
-let sellVolume = 0;
-
-export function getOpenPosition() {
-    return buyVolume - sellVolume;
-}
-
-const topics = ["market", "trades"];
+import { topics } from "./constant";
 
 const consumerConfig = {
     "group.id": "calculation-service",
@@ -33,7 +26,7 @@ consumer.on("ready", () => {
     consumer.consume();
 });
 
-consumer.on("data", (data) => {
+consumer.on("data", async (data) => {
     if (!data.value) {
         throw new Error("Invalid message");
     }
@@ -43,19 +36,10 @@ consumer.on("data", (data) => {
 
     if (message.messageType === "market") {
         const marketMessage = toMarketMessage(message);
-        console.log("Processed Market Message:", marketMessage);
+        await processMarketMessage(marketMessage);
     } else if (message.messageType === "trades") {
         const tradeMessage = toTradeMessage(message);
-
-        if (tradeMessage.tradeType === "BUY") {
-            buyVolume += tradeMessage.volume;
-        } else if (tradeMessage.tradeType === "SELL") {
-            sellVolume += tradeMessage.volume;
-        } else {
-            console.error("Invalid trade type:", tradeMessage.tradeType);
-        }
-
-        console.log("Trade Processed. Buy Volume:", buyVolume, "Sell Volume:", sellVolume);
+        processTradeMessage(tradeMessage);
     } else {
         console.warn("Unknown message type:", message.messageType);
     }
@@ -63,6 +47,8 @@ consumer.on("data", (data) => {
 
 consumer.on("event.error", (err) => {
     console.error("Kafka consumer error:", err);
+    console.log("Retrying connection...");
+    setTimeout(() => consumer.connect(), 5000);
 });
 
 consumer.on("disconnected", (event) => {
