@@ -29,8 +29,8 @@ app.get("/open-position", (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     // Function to send the open position periodically
-    const sendOpenPosition = () => {
-        const openPosition = getOpenPosition();
+    const sendOpenPosition = async () => {
+        const openPosition = await getOpenPosition();
         res.write(toStreamMessage(openPosition.toFixed(1)));
     };
 

@@ -1,18 +1,16 @@
-import * as mongoose from 'mongoose';
+import * as mongoose from "mongoose";
 
-const TradeDataSchema = new mongoose.Schema(
+const pnlSchema = new mongoose.Schema(
     {
-        gtin: { type: Number, required: true },
-        name: { type: String, required: true },
-        image: { type: String },
-        brandName: { type: String, required: true },
-        category: { type: String, required: true },
-        color: { type: String, required: true },
-        stock: { type: Number, required: true },
-        price: { type: Number, required: true }
+        startTime: { type: Date, required: true },
+        endTime: { type: Date, required: true },
+        pnl: { type: Number, required: true },
     },
     { timestamps: true }
 );
 
+export const PnL = mongoose.model("PnLTransaction", pnlSchema);
 
-export default mongoose.model('data', TradeDataSchema);
+const openPositionSchema = new mongoose.Schema({ openPosition: { type: Number, required: true } }, { timestamps: true });
+
+export const OpenPosition = mongoose.model("OpenPosition", openPositionSchema);

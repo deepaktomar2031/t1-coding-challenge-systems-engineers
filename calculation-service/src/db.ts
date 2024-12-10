@@ -14,7 +14,7 @@ export async function savePnl(pnlData: IPnL): Promise<void> {
 export async function setOpenPosition(openPosition: IOpenPosition): Promise<void> {
     try {
         await OpenPosition.updateOne({}, openPosition, { upsert: true });
-        console.log("Open position saved successfully!");
+        console.log("Open position updated successfully!");
     } catch (error) {
         console.error("Error saving open positions:", error);
     }
@@ -23,8 +23,6 @@ export async function setOpenPosition(openPosition: IOpenPosition): Promise<void
 export async function getOpenPosition(): Promise<number> {
     try {
         const openPosition = await OpenPosition.find({});
-        console.log("++++++++++++++++++++++++++openPosition", openPosition);
-
         return openPosition[0] ? openPosition[0].openPosition : 0;
     } catch (error) {
         console.error("Error fetching open positions:", error);

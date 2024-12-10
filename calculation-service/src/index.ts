@@ -6,7 +6,6 @@ import { resetDatabase } from "./db";
 import { startKafkaConsumer } from "./kafka-consumer";
 
 export const app = express();
-
 app.use(cors());
 
 const start = async () => {

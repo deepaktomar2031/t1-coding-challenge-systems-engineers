@@ -30,8 +30,6 @@ export interface TradeMessage {
 export interface IPnL {
     startTime: Date;
     endTime: Date;
-    buyVolume: number;
-    sellVolume: number;
     pnl: number;
 }
 

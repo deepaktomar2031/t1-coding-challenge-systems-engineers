@@ -6,7 +6,6 @@ const trade = {
     sellVolume: 0,
 };
 
-let previousMarketMessage: Partial<MarketMessage> = {};
 let currentMarketMessage: Partial<MarketMessage> = {};
 
 function resetTradeVolume() {
@@ -14,48 +13,44 @@ function resetTradeVolume() {
     trade.sellVolume = 0;
 }
 
+function roundToTwo() {
+    trade.buyVolume = Number(trade.buyVolume.toFixed(2));
+    trade.sellVolume = Number(trade.sellVolume.toFixed(2));
+}
+
 export async function processMarketMessage(marketMessage: MarketMessage): Promise<void> {
-    previousMarketMessage = currentMarketMessage as MarketMessage;
-    if (previousMarketMessage.startTime) {
-        const pnl = trade.sellVolume * previousMarketMessage.sellPrice! - trade.buyVolume * previousMarketMessage.buyPrice!;
+    const pnl = Number((trade.sellVolume * marketMessage.sellPrice - trade.buyVolume * marketMessage.buyPrice).toFixed(2));
 
-        // Save previous transaction
-        await savePnl({
-            startTime: previousMarketMessage.startTime,
-            endTime: previousMarketMessage.endTime,
-            buyVolume: trade.buyVolume,
-            sellVolume: trade.sellVolume,
-            pnl,
-        } as IPnL);
+    // Save PnL data
+    const savePnlData: IPnL = {
+        startTime: marketMessage.startTime,
+        endTime: marketMessage.endTime,
+        pnl,
+    };
+    await savePnl(savePnlData);
 
-        const lastOpenPosition: number = await getOpenPosition();
-        const currentOpenPosition = trade.buyVolume - trade.sellVolume;
+    const lastOpenPosition: number = await getOpenPosition();
+    const currentOpenPosition = lastOpenPosition + trade.buyVolume - trade.sellVolume;
 
-        // Save open position
-        await setOpenPosition({ openPosition: currentOpenPosition } as IOpenPosition);
+    // Update new open position
+    await setOpenPosition({ openPosition: currentOpenPosition } as IOpenPosition);
 
-        resetTradeVolume();
-    }
-    currentMarketMessage = marketMessage;
+    resetTradeVolume();
+    currentMarketMessage = { startTime: marketMessage.startTime };
 }
 
 export function processTradeMessage(tradeMessage: TradeMessage) {
     if (!currentMarketMessage.startTime) {
-        console.warn("Discarding trade message - no active market context");
+        console.warn("Discarding trade message");
         return;
     }
 
-    const tradeTime = tradeMessage.time;
-    const startTime = currentMarketMessage.startTime;
-    const endTime = currentMarketMessage.endTime;
-
-    if (startTime && endTime && tradeTime >= startTime && tradeTime <= endTime) {
-        if (tradeMessage.tradeType === "BUY") {
-            trade.buyVolume += tradeMessage.volume;
-        } else if (tradeMessage.tradeType === "SELL") {
-            trade.sellVolume += tradeMessage.volume;
-        } else {
-            console.error("Invalid trade type:", tradeMessage.tradeType);
-        }
+    if (tradeMessage.tradeType === "BUY") {
+        trade.buyVolume += tradeMessage.volume;
+    } else if (tradeMessage.tradeType === "SELL") {
+        trade.sellVolume += tradeMessage.volume;
+    } else {
+        console.error("Invalid trade type:", tradeMessage.tradeType);
     }
+    roundToTwo();
 }

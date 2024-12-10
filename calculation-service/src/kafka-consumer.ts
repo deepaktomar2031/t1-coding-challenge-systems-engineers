@@ -32,7 +32,7 @@ consumer.on("data", async (data) => {
     }
 
     const message = JSON.parse(data.value.toString());
-    console.log("Received message:", message);
+    // console.log("Received message:", message);
 
     if (message.messageType === "market") {
         const marketMessage = toMarketMessage(message);
