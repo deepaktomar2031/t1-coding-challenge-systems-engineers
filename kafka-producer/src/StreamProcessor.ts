@@ -1,10 +1,10 @@
 import { ReadableStream } from "stream/web";
 
 export class StreamProcessor {
-    private buffer: string = '';
-    private decoder = new TextDecoder('utf-8');
+    private buffer: string = "";
+    private decoder = new TextDecoder("utf-8");
 
-    constructor(private onMessage: (message: any) => void) { }
+    constructor(private onMessage: (message: any) => void) {}
 
     async processStream(stream: ReadableStream<Uint8Array>) {
         const reader = stream.getReader();
@@ -29,17 +29,17 @@ export class StreamProcessor {
     private processBuffer(isEnd: boolean = false) {
         let boundary: number;
 
-        while ((boundary = this.buffer.indexOf('\n')) >= 0) {
+        while ((boundary = this.buffer.indexOf("\n")) >= 0) {
             const completeLine = this.buffer.slice(0, boundary).trim(); // Extract the complete line
             this.buffer = this.buffer.slice(boundary + 1); // Remove the processed line from the buffer
 
-            if (completeLine.startsWith('data: ')) {
+            if (completeLine.startsWith("data: ")) {
                 const jsonString = completeLine.slice(6); // Remove the "data: " prefix
                 try {
                     const parsedMessage = JSON.parse(jsonString);
                     this.onMessage(parsedMessage);
                 } catch (error) {
-                    console.error('Failed to parse JSON:', jsonString, error);
+                    console.error("Failed to parse JSON:", jsonString, error);
                 }
             }
         }
@@ -50,7 +50,7 @@ export class StreamProcessor {
                 const parsedMessage = JSON.parse(this.buffer.trim());
                 this.onMessage(parsedMessage);
             } catch (error) {
-                console.error('Failed to parse JSON at the end of stream:', this.buffer.trim(), error);
+                console.error("Failed to parse JSON at the end of stream:", this.buffer.trim(), error);
             }
         }
     }

@@ -25,7 +25,7 @@ export interface TradeMessage {
 }
 
 export interface PnL {
-    startTime: string,
-    endTime: string,
-    pnl: number
+    startTime: string;
+    endTime: string;
+    pnl: number;
 }

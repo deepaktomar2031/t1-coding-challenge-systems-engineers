@@ -1,9 +1,9 @@
 {
-  "name": "t1-coding-challenge",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "start": "docker-compose up",
-    "kafka:setup": "./kafka-setup.sh"
-  }
+    "name": "t1-coding-challenge",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start": "docker compose -f docker-compose.yml up --build",
+        "kafka:setup": "./kafka-setup.sh"
+    }
 }
