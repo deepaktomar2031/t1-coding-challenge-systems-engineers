@@ -2,10 +2,17 @@ import cors from "cors";
 import express from "express";
 import { getOpenPosition } from "./open-position";
 import { getPnls } from "./pnl";
+import { connectMongo } from "./db-config";
 
 export const app = express();
 
 app.use(cors());
+
+const connectDatabases = async () => {
+    await connectMongo(String(process.env.DATABASE_URL!));
+};
+
+connectDatabases();
 
 app.get("/health", (_req, res) => {
     res.json({ status: "OK" });
@@ -22,8 +29,8 @@ app.get("/open-position", (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     // Function to send the open position periodically
-    const sendOpenPosition = () => {
-        const openPosition = getOpenPosition();
+    const sendOpenPosition = async () => {
+        const openPosition = await getOpenPosition();
         res.write(toStreamMessage(openPosition.toFixed(1)));
     };
 

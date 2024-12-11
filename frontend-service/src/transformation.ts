@@ -1,19 +1,13 @@
-import { MarketMessage, RawMarketMessage, RawTradeMessage, TradeMessage } from "./types";
+import { IPnL, IRawPnL } from "./types";
 
-export function toMarketMessage(raw: RawMarketMessage): MarketMessage {
+export function toRawPnLMessage(raw: IPnL): IRawPnL {
     return {
-        messageType: raw.messageType,
-        buyPrice: parseFloat(raw.buyPrice),
-        sellPrice: parseFloat(raw.sellPrice),
-        time: new Date(raw.time),
+        startTime: dateToIsoString(raw.startTime),
+        endTime: dateToIsoString(raw.endTime),
+        pnl: raw.pnl,
     };
 }
 
-export function toTradeMessage(raw: RawTradeMessage): TradeMessage {
-    return {
-        messageType: raw.messageType,
-        tradeType: raw.tradeType,
-        volume: parseFloat(raw.volume),
-        time: new Date(raw.time),
-    };
+function dateToIsoString(date: Date): string {
+    return date.toISOString().split(".")[0] + "Z";
 }

@@ -1,61 +1,72 @@
 services:
-  database:
-    container_name: t1-coding-challenge-database
-    image: mongo:4.4.3
-    ports:
-      - "27017:27017"
+    mongo_db:
+        image: mongo:latest
+        container_name: mongo_db
+        command: mongod --port 27018
+        ports:
+            - "27018:27018"
+        volumes:
+            - mongo_data:/data/db
 
-  zookeeper:
-    container_name: t1-coding-challenge-zookeeper
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    ports:
-      - "2181:2181"
+    zookeeper:
+        container_name: t1-coding-challenge-zookeeper
+        image: confluentinc/cp-zookeeper:latest
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+        ports:
+            - "2181:2181"
 
-  kafka:
-    container_name: t1-coding-challenge-kafka
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    kafka:
+        container_name: t1-coding-challenge-kafka
+        image: confluentinc/cp-kafka:latest
+        depends_on:
+            - zookeeper
+        ports:
+            - "9092:9092"
+        environment:
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  kafka-producer:
-    container_name: t1-coding-challenge-kafka-producer
-    build: ./kafka-producer
-    depends_on:
-      - kafka
+    kafka-producer:
+        container_name: t1-coding-challenge-kafka-producer
+        build: ./kafka-producer
+        depends_on:
+            - kafka
 
-  frontend-service:
-    container_name: t1-coding-challenge-frontend-service
-    build: ./frontend-service
-    ports:
-      - "3001:3001"
-    depends_on:
-      - kafka-producer
+    frontend-service:
+        container_name: t1-coding-challenge-frontend-service
+        build: ./frontend-service
+        environment:
+            DATABASE_URL: mongodb://mongo_db:27018/tradeDB
+        ports:
+            - "3001:3001"
+        depends_on:
+            - kafka-producer
 
-  calculation-service:
-    container_name: t1-coding-challenge-calculation-service
-    build: ./calculation-service
-    depends_on:
-      - kafka-producer
-      - database
+    calculation-service:
+        build: ./calculation-service
+        environment:
+            DATABASE_URL: mongodb://mongo_db:27018/tradeDB
+        deploy:
+            replicas: 2
+        depends_on:
+            - kafka-producer
+            - mongo_db
 
-  frontend:
-    container_name: t1-coding-challenge-frontend
-    build:
-      context: ./frontend
-      target: dev
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
-    depends_on:
-      - frontend-service
+    frontend:
+        container_name: t1-coding-challenge-frontend
+        build:
+            context: ./frontend
+            target: dev
+            dockerfile: Dockerfile
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        ports:
+            - "3000:3000"
+        depends_on:
+            - frontend-service
+
+volumes:
+    mongo_data:
