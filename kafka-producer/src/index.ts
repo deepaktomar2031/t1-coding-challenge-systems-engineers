@@ -9,6 +9,8 @@ const producerConfig: ProducerGlobalConfig = { "metadata.broker.list": "kafka:90
 
 const adminConfig = { "metadata.broker.list": "kafka:9092", "client.id": "admin" };
 
+let partitionKey: string | null = null;
+
 const producer = new Producer(producerConfig);
 
 producer.on("event.error", (err) => {
@@ -28,7 +30,21 @@ producer.on("ready", async () => {
 });
 
 function onMessage(message: RawMessage) {
-    producer.produce(message.messageType, null, Buffer.from(JSON.stringify(message)), null, Date.now());
+    if (message.messageType === "market") {
+        if (partitionKey) {
+            produceMessage(message, partitionKey);
+            partitionKey = null;
+        }
+    } else if (message.messageType === "trades") {
+        if (!partitionKey) {
+            partitionKey = message.time;
+        }
+        produceMessage(message, partitionKey);
+    }
+}
+
+function produceMessage(message: RawMessage, partitionKey: string) {
+    producer.produce(message.messageType, null, Buffer.from(JSON.stringify(message)), partitionKey, Date.now());
 }
 
 async function fetchStreamAndProduce() {
