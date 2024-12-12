@@ -12,6 +12,8 @@ export async function saveTradeMessage(tradeMessage: TradeMessage): Promise<void
 
 export async function fetchTradeMessage(startTime: Date, endTime: Date): Promise<TradeMessage[]> {
     try {
+        // startTime and endTime are not required as we're flushing the collection after each market message & pnl calculation
+        // but just in case if we want to keep the data for some time then startTime and endTime will be useful
         const tradeMessages = await Trade.find({ time: { $gte: startTime, $lte: endTime } });
         return tradeMessages.map((element) => element.toObject() as TradeMessage);
     } catch (error) {
