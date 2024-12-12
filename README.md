@@ -20,3 +20,10 @@ You can find the challenge [here](https://docs.google.com/document/d/1fhYF3M1IKb
 7. Submit the link to your forked repository
 
 Happy Coding 🚀
+
+
+# Build & Run the project in docker container
+- `npm start`
+
+# MongoDB connection URL
+- mongodb://mongo_db:27018/

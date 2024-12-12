@@ -59,4 +59,4 @@ class MessageProcessor {
     }
 }
 
-export const messageProcessor = new MessageProcessor();
+export const messageProcessor: MessageProcessor = new MessageProcessor();
